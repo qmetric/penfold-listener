@@ -1,4 +1,4 @@
-package org.huwtl.penfold.listener.model;
+package org.huwtl.penfold.listener.domain.model;
 
 public class QueueBinding
 {
