@@ -1,4 +1,4 @@
-package org.huwtl.penfold.listener.app;
+package org.huwtl.penfold.listener.app.mysql;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 

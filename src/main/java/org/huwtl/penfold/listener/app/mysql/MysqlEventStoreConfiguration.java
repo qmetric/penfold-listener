@@ -1,4 +1,4 @@
-package org.huwtl.penfold.listener.app;
+package org.huwtl.penfold.listener.app.mysql;
 
 public class MysqlEventStoreConfiguration
 {

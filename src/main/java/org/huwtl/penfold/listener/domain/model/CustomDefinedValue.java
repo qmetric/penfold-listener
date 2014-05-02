@@ -8,13 +8,13 @@ import static com.google.common.base.Preconditions.checkState;
 
 public class CustomDefinedValue
 {
-    private final Optional<CustomDefinedValueMapper> mapper;
+    private final Optional<CustomDefinedValueMapper> customMapper;
 
     private final String raw;
 
-    public CustomDefinedValue(final Optional<CustomDefinedValueMapper> mapper, final String raw)
+    public CustomDefinedValue(final Optional<CustomDefinedValueMapper> customMapper, final String raw)
     {
-        this.mapper = mapper;
+        this.customMapper = customMapper;
         this.raw = raw;
     }
 
@@ -25,8 +25,8 @@ public class CustomDefinedValue
 
     public <T> T getAsObject(final TypeToken<T> type)
     {
-        checkState(mapper.isPresent(), "Cannot parse as custom object without a custom mapper");
+        checkState(customMapper.isPresent(), "Cannot parse as custom object without a custom mapper");
 
-        return mapper.get().map(raw, type);
+        return customMapper.get().map(raw, type);
     }
 }

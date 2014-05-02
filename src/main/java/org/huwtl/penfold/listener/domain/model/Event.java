@@ -1,19 +1,7 @@
 package org.huwtl.penfold.listener.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.joda.time.DateTime;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, visible = true, property = "type")
-@JsonSubTypes({
-                  @JsonSubTypes.Type(value = TaskCreated.class, name = "TaskCreated"),
-                  @JsonSubTypes.Type(value = FutureTaskCreated.class, name = "FutureTaskCreated"),
-                  @JsonSubTypes.Type(value = TaskTriggered.class, name = "TaskTriggered"),
-                  @JsonSubTypes.Type(value = TaskStarted.class, name = "TaskStarted"),
-                  @JsonSubTypes.Type(value = TaskCompleted.class, name = "TaskCompleted"),
-                  @JsonSubTypes.Type(value = TaskCancelled.class, name = "TaskCancelled"),
-                  @JsonSubTypes.Type(value = TaskPayloadUpdated.class, name = "TaskPayloadUpdated")
-              })
 public abstract class Event
 {
     public final String type;
