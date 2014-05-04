@@ -1,4 +1,4 @@
-package org.huwtl.penfold.listener.model;
+package org.huwtl.penfold.listener.domain.model;
 
 import com.google.common.base.Optional;
 import org.joda.time.DateTime;
@@ -11,7 +11,14 @@ public class TaskPayloadUpdated extends Event
 
     public final Optional<Long> score;
 
-    public TaskPayloadUpdated(final String eventType, final String aggregateId, final String aggregateVersion, final DateTime created, final Patch payloadUpdate, final Optional<String> updateType, final Optional<Long> score)
+    private TaskPayloadUpdated()
+    {
+        payloadUpdate = null;
+        updateType = null;
+        score = null;
+    }
+
+    public TaskPayloadUpdated(final String eventType, final String aggregateId, final Long aggregateVersion, final DateTime created, final Patch payloadUpdate, final Optional<String> updateType, final Optional<Long> score)
     {
         super(eventType, aggregateId, aggregateVersion, created);
         this.payloadUpdate = payloadUpdate;
