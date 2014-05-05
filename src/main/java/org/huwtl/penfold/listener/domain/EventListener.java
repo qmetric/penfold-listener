@@ -18,13 +18,13 @@ public class EventListener
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventListener.class);
 
-    private final EventStoreReader eventStore;
+    private final EventStore eventStore;
 
     private final EventTracker eventTracker;
 
     private final List<EventHandler<Event>> eventHandlers;
 
-    public EventListener(final EventStoreReader eventStore, final EventTracker eventTracker, final List<EventHandler<Event>> eventHandlers)
+    public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler<Event>> eventHandlers)
     {
         this.eventStore = eventStore;
         this.eventTracker = eventTracker;

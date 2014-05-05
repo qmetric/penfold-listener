@@ -14,7 +14,7 @@ class EventListenerTest extends Specification {
 
     final event3 = Mock(EventRecord)
 
-    final eventStoreReader = Mock(EventStoreReader)
+    final eventStoreReader = Mock(EventStore)
 
     final eventTracker = Mock(EventTracker)
 

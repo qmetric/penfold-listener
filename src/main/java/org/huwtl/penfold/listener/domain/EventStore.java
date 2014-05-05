@@ -5,7 +5,7 @@ import org.huwtl.penfold.listener.domain.model.Event;
 import org.huwtl.penfold.listener.domain.model.EventRecord;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
 
-public interface EventStoreReader
+public interface EventStore
 {
     Optional<EventSequenceId> retrieveLastEventId();
 

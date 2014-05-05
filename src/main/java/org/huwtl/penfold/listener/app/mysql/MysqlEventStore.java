@@ -2,7 +2,7 @@ package org.huwtl.penfold.listener.app.mysql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
-import org.huwtl.penfold.listener.domain.EventStoreReader;
+import org.huwtl.penfold.listener.domain.EventStore;
 import org.huwtl.penfold.listener.domain.model.Event;
 import org.huwtl.penfold.listener.domain.model.EventRecord;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
@@ -20,15 +20,15 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MysqlEventStoreReader implements EventStoreReader
+public class MysqlEventStore implements EventStore
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MysqlEventStoreReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MysqlEventStore.class);
 
     private final DBI dbi;
 
     private final ObjectMapper objectMapper;
 
-    MysqlEventStoreReader(final DataSource dataSource, final ObjectMapper objectMapper)
+    MysqlEventStore(final DataSource dataSource, final ObjectMapper objectMapper)
     {
         dbi = new DBI(dataSource);
         this.objectMapper = objectMapper;
