@@ -1,5 +1,6 @@
 package org.huwtl.penfold.listener.domain.model;
 
+import com.google.common.base.Optional;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,11 +10,11 @@ public class EventTrackingRecord
 {
     public final EventSequenceId id;
 
-    public final DateTime startedDate;
+    public final Optional<DateTime> startedDate;
 
-    public final DateTime completedDate;
+    public final Optional<DateTime> completedDate;
 
-    public EventTrackingRecord(final EventSequenceId id, final DateTime startedDate, final DateTime completedDate)
+    public EventTrackingRecord(final EventSequenceId id, final Optional<DateTime> startedDate, final Optional<DateTime> completedDate)
     {
         this.id = id;
         this.startedDate = startedDate;
@@ -27,7 +28,7 @@ public class EventTrackingRecord
 
     public boolean isAlreadyStarted()
     {
-        return startedDate != null && completedDate == null;
+        return startedDate.isPresent() && !completedDate.isPresent();
     }
 
     @Override public int hashCode()

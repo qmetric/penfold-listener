@@ -22,7 +22,7 @@ class EventListenerTest extends Specification {
 
     final unsuitableEventHandler = eventTracker(false)
 
-    final EventListener eventListener = new EventListener(eventStoreReader, eventTracker, [suitableEventHandler, unsuitableEventHandler])
+    final eventListener = new EventListener(eventStoreReader, eventTracker, [suitableEventHandler, unsuitableEventHandler])
 
     def "should process new events"()
     {
@@ -140,6 +140,6 @@ class EventListenerTest extends Specification {
 
     private static def EventTrackingRecord trackingRecord(final long eventId, final boolean started = false, final boolean completed = false)
     {
-        new EventTrackingRecord(new EventSequenceId(eventId), started ? DateTime.now(): null, completed ? DateTime.now(): null)
+        new EventTrackingRecord(new EventSequenceId(eventId), started ? Optional.of(DateTime.now()): Optional.<DateTime>absent(), completed ? Optional.of(DateTime.now()): Optional.<DateTime>absent())
     }
 }

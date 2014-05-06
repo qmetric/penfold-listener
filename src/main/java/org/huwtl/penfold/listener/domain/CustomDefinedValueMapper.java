@@ -4,5 +4,5 @@ import com.google.common.reflect.TypeToken;
 
 public interface CustomDefinedValueMapper
 {
-    public <T> T map(String raw, final TypeToken<T> type);
+    <T> T map(String raw, TypeToken<T> type);
 }

@@ -1,4 +1,4 @@
-CREATE TABLE event_tracker
+CREATE TABLE event_trackers
 (
   id VARCHAR(128) NOT NULL,
   status VARCHAR(128) NOT NULL,

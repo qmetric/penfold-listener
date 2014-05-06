@@ -28,7 +28,7 @@ public class MysqlEventStore implements EventStore
 
     private final ObjectMapper objectMapper;
 
-    MysqlEventStore(final DataSource dataSource, final ObjectMapper objectMapper)
+    public MysqlEventStore(final DataSource dataSource, final ObjectMapper objectMapper)
     {
         dbi = new DBI(dataSource);
         this.objectMapper = objectMapper;

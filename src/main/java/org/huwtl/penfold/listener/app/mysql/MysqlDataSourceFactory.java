@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 
 import java.beans.PropertyVetoException;
 
-class MysqlDataSourceFactory
+public class MysqlDataSourceFactory
 {
     public static DataSource create(final MysqlEventStoreConfiguration configuration)
     {

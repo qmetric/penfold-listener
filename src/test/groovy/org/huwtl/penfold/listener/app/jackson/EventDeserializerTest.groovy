@@ -3,6 +3,7 @@ package org.huwtl.penfold.listener.app.jackson
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Optional
 import com.google.common.reflect.TypeToken
+import org.huwtl.penfold.listener.domain.CustomDefinedValueMapper
 import org.huwtl.penfold.listener.domain.model.Add
 import org.huwtl.penfold.listener.domain.model.CustomDefinedValue
 import org.huwtl.penfold.listener.domain.model.Event
@@ -24,9 +25,9 @@ class EventDeserializerTest extends Specification {
 
     static final triggerDate = new DateTime(2014, 2, 3, 14, 30, 1, 0)
 
-    final customDefinedValueMapper = new JacksonCustomDefinedValueMapper(new ObjectMapper())
+    final CustomDefinedValueMapper customDefinedValueMapper = new JacksonCustomDefinedValueMapper(new ObjectMapper())
 
-    final objectMapper = new ObjectMapperFactory(customDefinedValueMapper).create()
+    final objectMapper = new ObjectMapperFactory(Optional.of(customDefinedValueMapper)).create()
 
     @Unroll def "should deserialize task payload update event"() {
         given:

@@ -36,7 +36,7 @@ public class MysqlEventTracker implements EventTracker
 
     private final String trackerId;
 
-    private DateTimeSource dateTimeSource;
+    private final DateTimeSource dateTimeSource;
 
     public MysqlEventTracker(final DataSource dataSource, final String trackerId, final DateTimeSource dateTimeSource)
     {
@@ -151,10 +151,16 @@ public class MysqlEventTracker implements EventTracker
         public EventTrackingRecord map(final int row, final ResultSet resultSet, final StatementContext statementContext) throws SQLException
         {
             final EventSequenceId id = new EventSequenceId(resultSet.getLong(1));
-            final DateTime started = new DateTime(resultSet.getTimestamp(2));
-            final DateTime completed = new DateTime(resultSet.getTimestamp(3));
+            final Optional<DateTime> started = parseDateTime(resultSet, 2);
+            final Optional<DateTime> completed = parseDateTime(resultSet, 3);
 
             return new EventTrackingRecord(id, started, completed);
         }
+    }
+
+    private static Optional<DateTime> parseDateTime(final ResultSet resultSet, final int columnIndex) throws SQLException
+    {
+        final Timestamp timestamp = resultSet.getTimestamp(columnIndex);
+        return timestamp != null ? Optional.of(new DateTime(timestamp)) : Optional.<DateTime>absent();
     }
 }

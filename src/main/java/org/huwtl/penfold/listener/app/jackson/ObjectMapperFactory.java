@@ -46,16 +46,11 @@ public class ObjectMapperFactory
 
     private final Optional<CustomDefinedValueMapper> customValueMapper;
 
-    public ObjectMapperFactory()
-    {
-        customValueMapper = Optional.absent();
-    }
-
-    public ObjectMapperFactory(final CustomDefinedValueMapper customValueMapper)
+    public ObjectMapperFactory(final Optional<CustomDefinedValueMapper> customValueMapper)
     {
         checkArgument(customValueMapper != null, "Missing custom object mapper");
         //noinspection ConstantConditions
-        this.customValueMapper = Optional.of(customValueMapper);
+        this.customValueMapper = customValueMapper;
     }
 
     public ObjectMapper create()

@@ -2,7 +2,11 @@ package org.huwtl.penfold.listener.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
-import org.apache.commons.lang3.StringUtils;
+import org.huwtl.penfold.listener.app.jackson.ObjectMapperFactory;
+import org.huwtl.penfold.listener.app.mysql.MysqlDataSourceFactory;
+import org.huwtl.penfold.listener.app.mysql.MysqlEventStore;
+import org.huwtl.penfold.listener.app.mysql.MysqlEventStoreConfiguration;
+import org.huwtl.penfold.listener.domain.CustomDefinedValueMapper;
 import org.huwtl.penfold.listener.domain.EventHandler;
 import org.huwtl.penfold.listener.domain.EventListener;
 import org.huwtl.penfold.listener.domain.EventStore;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class EventListenerConfiguration
 {
@@ -23,25 +28,24 @@ public class EventListenerConfiguration
 
     private List<EventHandler<Event>> eventHandlers = new ArrayList<EventHandler<Event>>();
 
-    private EventStore eventStore;
+    private MysqlEventStoreConfiguration eventStoreConfig;
 
     private EventTracker eventTracker;
 
-    private Optional<ObjectMapper> customObjectMapper = Optional.absent();
+    private Optional<CustomDefinedValueMapper> customDefinedValueMapper = Optional.absent();
 
     public EventListenerConfiguration(final String trackingId)
     {
-
         this.trackingId = trackingId;
     }
 
-    public EventListenerConfiguration from(final EventStore eventStore)
+    public EventListenerConfiguration readEventsFrom(final MysqlEventStoreConfiguration eventStoreConfig)
     {
-        this.eventStore = eventStore;
+        this.eventStoreConfig = eventStoreConfig;
         return this;
     }
 
-    public EventListenerConfiguration addEventHandler(final EventHandler<Event> eventHandler)
+    public EventListenerConfiguration withEventHandler(final EventHandler<Event> eventHandler)
     {
         eventHandlers.add(eventHandler);
         return this;
@@ -59,26 +63,40 @@ public class EventListenerConfiguration
         return this;
     }
 
-
-    public EventListenerConfiguration withCustomObjectMapper(final ObjectMapper customObjectMapper)
+    public EventListenerConfiguration parseCustomJsonWith(final CustomDefinedValueMapper customDefinedValueMapper)
     {
-        this.customObjectMapper = Optional.of(customObjectMapper);
+        this.customDefinedValueMapper = Optional.of(customDefinedValueMapper);
         return this;
     }
 
     public EventPollingScheduler build()
     {
-        checkArgument(StringUtils.isNotBlank(trackingId), "tracker id missing");
-        checkArgument(StringUtils.isNotBlank(trackingId), "tracker id missing");
+        validateConfig();
+
+        final EventStore eventStore = createEventStore();
 
         final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers);
 
         return new EventPollingScheduler(eventListener, pollingInterval);
     }
 
-    public void start()
+    private EventStore createEventStore()
     {
+        final ObjectMapper objectMapper = createObjectMapper();
 
+        return new MysqlEventStore(MysqlDataSourceFactory.create(eventStoreConfig), objectMapper);
     }
 
+    private ObjectMapper createObjectMapper()
+    {
+        return new ObjectMapperFactory(customDefinedValueMapper).create();
+    }
+
+    private void validateConfig()
+    {
+        checkArgument(isNotBlank(trackingId), "missing tracker id ");
+        checkArgument(eventTracker != null, "missing event tracker");
+        checkArgument(pollingInterval != null, "missing polling interval");
+        checkArgument(eventHandlers.isEmpty(), "missing event handlers");
+    }
 }

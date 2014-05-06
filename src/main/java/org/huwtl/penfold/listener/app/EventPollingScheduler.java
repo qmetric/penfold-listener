@@ -25,7 +25,7 @@ public class EventPollingScheduler
         this(eventListener, pollingInterval, newSingleThreadScheduledExecutor());
     }
 
-    EventPollingScheduler(final EventListener eventListener, final Interval pollingInterval, final ScheduledExecutorService executorService)
+    public EventPollingScheduler(final EventListener eventListener, final Interval pollingInterval, final ScheduledExecutorService executorService)
     {
         this.eventListener = eventListener;
         this.interval = pollingInterval;
