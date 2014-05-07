@@ -56,6 +56,8 @@ public class EventPollingScheduler
     {
         try
         {
+            LOGGER.info("polling for new events");
+
             eventListener.poll();
         }
         catch (final Exception e)

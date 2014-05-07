@@ -33,7 +33,16 @@ class MysqlEventTrackerTest extends Specification {
 
     def cleanup()
     {
-        sql.execute("delete from event_trackers")
+        sql.execute("DELETE FROM event_trackers")
+    }
+
+    def "should know when connection established"()
+    {
+        when:
+        eventTracker.checkConnectivity()
+
+        then:
+        notThrown(RuntimeException)
     }
 
     def "should know when no tracking history"()
@@ -54,7 +63,7 @@ class MysqlEventTrackerTest extends Specification {
     def "should prevent concurrent handling of the same event"()
     {
         when:
-        2.times {eventTracker.markAsStarted(EventSequenceId.first())}
+        2.times { eventTracker.markAsStarted(EventSequenceId.first()) }
 
         then:
         thrown(ConflictException)

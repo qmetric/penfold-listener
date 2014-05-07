@@ -1,53 +1,58 @@
 package org.huwtl.penfold.listener.app;
 
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import org.huwtl.penfold.listener.app.jackson.ObjectMapperFactory;
-import org.huwtl.penfold.listener.app.mysql.MysqlDataSourceFactory;
+import org.huwtl.penfold.listener.app.metrics.ConnectivityHealthCheck;
 import org.huwtl.penfold.listener.app.mysql.MysqlEventStore;
-import org.huwtl.penfold.listener.app.mysql.MysqlEventStoreConfiguration;
+import org.huwtl.penfold.listener.app.mysql.MysqlEventTracker;
 import org.huwtl.penfold.listener.domain.CustomDefinedValueMapper;
 import org.huwtl.penfold.listener.domain.EventHandler;
 import org.huwtl.penfold.listener.domain.EventListener;
 import org.huwtl.penfold.listener.domain.EventStore;
 import org.huwtl.penfold.listener.domain.EventTracker;
-import org.huwtl.penfold.listener.domain.model.Event;
+
+import javax.sql.DataSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class EventListenerConfiguration
 {
-    private final String trackingId;
+    private final String trackerId;
 
     private Interval pollingInterval;
 
-    private List<EventHandler<Event>> eventHandlers = new ArrayList<EventHandler<Event>>();
+    private List<EventHandler> eventHandlers = new ArrayList<EventHandler>();
 
-    private MysqlEventStoreConfiguration eventStoreConfig;
+    private DataSource eventStoreDataSource;
 
-    private EventTracker eventTracker;
+    private DataSource eventTrackerDataSource;
 
     private Optional<CustomDefinedValueMapper> customDefinedValueMapper = Optional.absent();
 
-    public EventListenerConfiguration(final String trackingId)
+    private HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
+
+    public EventListenerConfiguration(final String trackerId)
     {
-        this.trackingId = trackingId;
+        this.trackerId = trackerId;
     }
 
-    public EventListenerConfiguration readEventsFrom(final MysqlEventStoreConfiguration eventStoreConfig)
+    public EventListenerConfiguration readEventsFromMysqlEventStore(final DataSource dataSource)
     {
-        this.eventStoreConfig = eventStoreConfig;
+        this.eventStoreDataSource = dataSource;
         return this;
     }
 
-    public EventListenerConfiguration withEventHandler(final EventHandler<Event> eventHandler)
+    public EventListenerConfiguration withEventHandlers(final EventHandler... eventHandlers)
     {
-        eventHandlers.add(eventHandler);
+        this.eventHandlers.addAll(copyOf(eventHandlers));
         return this;
     }
 
@@ -57,9 +62,9 @@ public class EventListenerConfiguration
         return this;
     }
 
-    public EventListenerConfiguration withEventTracker(final EventTracker eventTracker)
+    public EventListenerConfiguration withMysqlEventTracker(final DataSource dataSource)
     {
-        this.eventTracker = eventTracker;
+        this.eventTrackerDataSource = dataSource;
         return this;
     }
 
@@ -69,22 +74,44 @@ public class EventListenerConfiguration
         return this;
     }
 
+    public EventListenerConfiguration withHealthCheckRegistry(final HealthCheckRegistry healthCheckRegistry)
+    {
+        this.healthCheckRegistry = healthCheckRegistry;
+
+        return this;
+    }
+
+    public HealthCheckRegistry getHealthCheckRegistry()
+    {
+        return healthCheckRegistry;
+    }
+
     public EventPollingScheduler build()
     {
         validateConfig();
 
         final EventStore eventStore = createEventStore();
 
+        final EventTracker eventTracker = new MysqlEventTracker(eventTrackerDataSource, trackerId);
+
         final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers);
 
+        registerHealthChecks(eventStore, eventTracker);
+
         return new EventPollingScheduler(eventListener, pollingInterval);
+    }
+
+    private void registerHealthChecks(final EventStore eventStore, final EventTracker eventTracker)
+    {
+        healthCheckRegistry.register("Event store", new ConnectivityHealthCheck(eventStore));
+        healthCheckRegistry.register("Event tracker", new ConnectivityHealthCheck(eventTracker));
     }
 
     private EventStore createEventStore()
     {
         final ObjectMapper objectMapper = createObjectMapper();
 
-        return new MysqlEventStore(MysqlDataSourceFactory.create(eventStoreConfig), objectMapper);
+        return new MysqlEventStore(eventStoreDataSource, objectMapper);
     }
 
     private ObjectMapper createObjectMapper()
@@ -94,9 +121,10 @@ public class EventListenerConfiguration
 
     private void validateConfig()
     {
-        checkArgument(isNotBlank(trackingId), "missing tracker id ");
-        checkArgument(eventTracker != null, "missing event tracker");
+        checkArgument(isNotBlank(trackerId), "missing tracker id ");
+        checkArgument(eventStoreDataSource != null, "missing event store data source");
+        checkArgument(eventTrackerDataSource != null, "missing event tracker data source");
         checkArgument(pollingInterval != null, "missing polling interval");
-        checkArgument(eventHandlers.isEmpty(), "missing event handlers");
+        checkArgument(!eventHandlers.isEmpty(), "missing event handlers");
     }
 }

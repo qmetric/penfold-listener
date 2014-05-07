@@ -35,6 +35,15 @@ class MysqlEventStoreTest extends Specification {
         sql.execute('DELETE FROM events')
     }
 
+    def "should know when connection established"()
+    {
+        when:
+        eventStore.checkConnectivity()
+
+        then:
+        notThrown(RuntimeException)
+    }
+
     def "should known when no events"()
     {
         expect:

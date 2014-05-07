@@ -2,6 +2,7 @@ package org.huwtl.penfold.listener.app.mysql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import org.huwtl.penfold.listener.domain.ConnectivityException;
 import org.huwtl.penfold.listener.domain.EventStore;
 import org.huwtl.penfold.listener.domain.model.Event;
 import org.huwtl.penfold.listener.domain.model.EventRecord;
@@ -34,6 +35,18 @@ public class MysqlEventStore implements EventStore
         this.objectMapper = objectMapper;
     }
 
+    @Override public void checkConnectivity() throws ConnectivityException
+    {
+        dbi.withHandle(new HandleCallback<Boolean>()
+        {
+            public Boolean withHandle(final Handle handle) throws Exception
+            {
+                handle.createQuery("SELECT 1").first();
+                return true;
+            }
+        });
+    }
+
     @Override public Optional<EventSequenceId> retrieveLastEventId()
     {
         return dbi.withHandle(new HandleCallback<Optional<EventSequenceId>>()
@@ -48,11 +61,11 @@ public class MysqlEventStore implements EventStore
         });
     }
 
-    @Override public Optional<EventRecord<Event>> retrieveBy(final EventSequenceId id)
+    @Override public Optional<EventRecord> retrieveBy(final EventSequenceId id)
     {
-        return dbi.withHandle(new HandleCallback<Optional<EventRecord<Event>>>()
+        return dbi.withHandle(new HandleCallback<Optional<EventRecord>>()
         {
-            public Optional<EventRecord<Event>> withHandle(final Handle handle) throws Exception
+            public Optional<EventRecord> withHandle(final Handle handle) throws Exception
             {
                 return Optional.fromNullable(handle.createQuery("SELECT id, data FROM events WHERE id = :id") //
                                                      .bind("id", id.value) //
@@ -63,9 +76,9 @@ public class MysqlEventStore implements EventStore
         });
     }
 
-    private class EventRecordMapper implements ResultSetMapper<EventRecord<Event>>
+    private class EventRecordMapper implements ResultSetMapper<EventRecord>
     {
-        @Override public EventRecord<Event> map(final int row, final ResultSet resultSet, final StatementContext statementContext) throws SQLException
+        @Override public EventRecord map(final int row, final ResultSet resultSet, final StatementContext statementContext) throws SQLException
         {
             final Long eventId = resultSet.getLong(1);
             final String rawEventData = resultSet.getString(2);

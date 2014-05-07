@@ -1,5 +1,4 @@
 package org.huwtl.penfold.listener.domain
-
 import com.google.common.base.Optional
 import org.huwtl.penfold.listener.domain.model.EventRecord
 import org.huwtl.penfold.listener.domain.model.EventSequenceId
@@ -129,12 +128,13 @@ class EventListenerTest extends Specification {
         1 * eventTracker.markAsStarted(new EventSequenceId(0))
         1 * eventTracker.markAsUnstarted(new EventSequenceId(0))
         0 * eventTracker.markAsCompleted(new EventSequenceId(0))
+        thrown(RuntimeException)
     }
 
     private def eventTracker(final boolean applicable)
     {
         final eventHandler = Mock(EventHandler)
-        eventHandler.interestedIn(_ as EventRecord) >> applicable
+        eventHandler.interestedIn(_) >> applicable
         eventHandler
     }
 

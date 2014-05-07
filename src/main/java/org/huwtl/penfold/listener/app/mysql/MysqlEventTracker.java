@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.googlecode.flyway.core.Flyway;
 import org.huwtl.penfold.listener.app.DateTimeSource;
 import org.huwtl.penfold.listener.domain.ConflictException;
+import org.huwtl.penfold.listener.domain.ConnectivityException;
 import org.huwtl.penfold.listener.domain.EventTracker;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord;
@@ -38,14 +39,33 @@ public class MysqlEventTracker implements EventTracker
 
     private final DateTimeSource dateTimeSource;
 
+    public MysqlEventTracker(final DataSource dataSource, final String trackerId)
+    {
+        this(dataSource, trackerId, new DateTimeSource());
+    }
+
     public MysqlEventTracker(final DataSource dataSource, final String trackerId, final DateTimeSource dateTimeSource)
     {
         this.trackerId = trackerId;
         this.dateTimeSource = dateTimeSource;
         final Flyway flyway = new Flyway();
         flyway.setDataSource(dataSource);
+        flyway.setLocations("database/migrations/penfold_listener");
         flyway.migrate();
         dbi = new DBI(dataSource);
+    }
+
+    @Override
+    public void checkConnectivity() throws ConnectivityException
+    {
+        dbi.withHandle(new HandleCallback<Boolean>()
+        {
+            public Boolean withHandle(final Handle handle) throws Exception
+            {
+                handle.createQuery("SELECT 1").first();
+                return true;
+            }
+        });
     }
 
     @Override

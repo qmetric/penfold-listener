@@ -1,39 +1,38 @@
 package org.huwtl.penfold.listener.app
-
+import com.codahale.metrics.health.HealthCheckRegistry
 import com.google.common.base.Optional
-import org.huwtl.penfold.listener.app.mysql.MysqlEventStoreConfiguration
 import org.huwtl.penfold.listener.domain.CustomDefinedValueMapper
 import org.huwtl.penfold.listener.domain.EventHandler
-import org.huwtl.penfold.listener.domain.EventTracker
 import spock.lang.Specification
+
+import javax.sql.DataSource
 
 import static java.util.concurrent.TimeUnit.MINUTES
 
 @SuppressWarnings("GroovyAccessibility")
 class EventListenerConfigurationTest extends Specification {
 
-    final config = new EventListenerConfiguration("tracking id")
+    final config = new EventListenerConfiguration("tracker id")
 
-    def "should accept tracking id" () {
+    def "should accept tracker id" () {
         expect:
-        config.trackingId == "tracking id"
+        config.trackerId == "tracker id"
     }
 
     def "should accept event store config" () {
         given:
-        final eventStoreConfig = Mock(MysqlEventStoreConfiguration)
+        final eventStoreDataSource = Mock(DataSource)
 
         when:
-        config.readEventsFrom(eventStoreConfig)
+        config.readEventsFromMysqlEventStore(eventStoreDataSource)
 
         then:
-        config.eventStoreConfig == eventStoreConfig
+        config.eventStoreDataSource == eventStoreDataSource
     }
 
     def "should accept multiple event handlers" () {
         when:
-        config.withEventHandler(Mock(EventHandler))
-        config.withEventHandler(Mock(EventHandler))
+        config.withEventHandlers(Mock(EventHandler), Mock(EventHandler))
 
         then:
         config.eventHandlers.size() == 2
@@ -49,13 +48,13 @@ class EventListenerConfigurationTest extends Specification {
 
     def "should accept event tracker" () {
         given:
-        final eventTracker = Mock(EventTracker)
+        final eventTrackerDataSource = Mock(DataSource)
 
         when:
-        config.withEventTracker(eventTracker)
+        config.withMysqlEventTracker(eventTrackerDataSource)
 
         then:
-        config.eventTracker == eventTracker
+        config.eventTrackerDataSource == eventTrackerDataSource
     }
 
     def "should accept custom json parsing rules"() {
@@ -67,5 +66,16 @@ class EventListenerConfigurationTest extends Specification {
 
         then:
         config.customDefinedValueMapper == Optional.of(customParser)
+    }
+
+    def "should accept health check registry"() {
+        given:
+        final registry = Mock(HealthCheckRegistry)
+
+        when:
+        config.withHealthCheckRegistry(registry)
+
+        then:
+        config.getHealthCheckRegistry() == registry
     }
 }

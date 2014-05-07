@@ -23,7 +23,7 @@ class ShutdownProcedure implements Runnable
     public ShutdownProcedure(ExecutorService executorService)
     {
         this.executorService = executorService;
-        shutdownThread = new Thread(this, format("shutdown-procedure:%s", executorService));
+        shutdownThread = new Thread(this, format("event-listener-shutdown:%s", executorService));
     }
 
     public void registerShutdownHook()
@@ -38,7 +38,7 @@ class ShutdownProcedure implements Runnable
 
     @Override public void run()
     {
-        LOGGER.info("Shutdown started");
+        LOGGER.info("Event listener shutdown started");
 
         if (!executorService.isTerminated())
         {
@@ -46,10 +46,10 @@ class ShutdownProcedure implements Runnable
         }
         else
         {
-            LOGGER.info("executor-service is already terminated");
+            LOGGER.info("Event listener is already terminated");
         }
 
-        LOGGER.info("Shutdown completed");
+        LOGGER.info("Event listener shutdown completed");
     }
 
     public void runAndRemoveHook()
@@ -73,7 +73,7 @@ class ShutdownProcedure implements Runnable
 
     private void stopAcceptingNewJobs()
     {
-        LOGGER.info("No new jobs accepted");
+        LOGGER.info("Event listener accepting no new events");
 
         if (!executorService.isShutdown())
         {
@@ -81,21 +81,21 @@ class ShutdownProcedure implements Runnable
         }
         else
         {
-            LOGGER.info("executor-service is already shutdown");
+            LOGGER.info("Event listener is already shutdown");
         }
     }
 
     private void waitForRunningJobsToTerminate() throws InterruptedException
     {
-        LOGGER.info("Terminating all executor-service jobs. Timeout is {} {}", TIMEOUT, SECONDS);
+        LOGGER.info("Terminating all event listener activity. Timeout is {} {}", TIMEOUT, SECONDS);
 
         if (executorService.awaitTermination(TIMEOUT, SECONDS))
         {
-            LOGGER.info("All jobs terminated normally");
+            LOGGER.info("All event listener activity terminated normally");
         }
         else
         {
-            LOGGER.warn("Running jobs did not complete within timeout. Forcing shutdown.");
+            LOGGER.warn("Event listener activity did not complete within timeout. Forcing shutdown.");
 
             executorService.shutdownNow();
         }
@@ -103,7 +103,7 @@ class ShutdownProcedure implements Runnable
 
     private void forceShutdown()
     {
-        LOGGER.warn("Shutdown thread was interrupted. Forcing executor shutdown.");
+        LOGGER.warn("Shutdown thread was interrupted. Forcing Event listener shutdown.");
 
         executorService.shutdownNow();
 

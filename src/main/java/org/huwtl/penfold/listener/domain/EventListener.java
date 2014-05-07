@@ -3,7 +3,6 @@ package org.huwtl.penfold.listener.domain;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
-import org.huwtl.penfold.listener.domain.model.Event;
 import org.huwtl.penfold.listener.domain.model.EventRecord;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
 import org.slf4j.Logger;
@@ -22,9 +21,9 @@ public class EventListener
 
     private final EventTracker eventTracker;
 
-    private final List<EventHandler<Event>> eventHandlers;
+    private final List<EventHandler> eventHandlers;
 
-    public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler<Event>> eventHandlers)
+    public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler> eventHandlers)
     {
         this.eventStore = eventStore;
         this.eventTracker = eventTracker;
@@ -50,12 +49,15 @@ public class EventListener
             catch (ConflictException e)
             {
                 LOGGER.info(String.format("event conflict, skipping"));
+                break;
             }
             catch (Exception e)
             {
                 LOGGER.error("error consuming event", e);
 
                 eventTracker.markAsUnstarted(eventId);
+
+                throw new RuntimeException(e);
             }
         }
     }
@@ -64,7 +66,7 @@ public class EventListener
     {
         eventTracker.markAsStarted(eventId);
 
-        final Optional<EventRecord<Event>> eventRecord = eventStore.retrieveBy(eventId);
+        final Optional<EventRecord> eventRecord = eventStore.retrieveBy(eventId);
 
         if (eventRecord.isPresent())
         {
@@ -74,12 +76,13 @@ public class EventListener
         eventTracker.markAsCompleted(eventId);
     }
 
-    private void handleEvent(final Optional<EventRecord<Event>> eventRecord)
+    private void handleEvent(final Optional<EventRecord> eventRecord)
     {
-        final Optional<EventHandler<Event>> suitableEventHandler = suitableEventHandler(eventRecord);
+        final Optional<EventHandler> suitableEventHandler = suitableEventHandler(eventRecord);
 
         if (suitableEventHandler.isPresent())
         {
+            //noinspection unchecked
             suitableEventHandler.get().handle(eventRecord.get());
         }
         else
@@ -88,14 +91,14 @@ public class EventListener
         }
     }
 
-    private Optional<EventHandler<Event>> suitableEventHandler(final Optional<EventRecord<Event>> eventRecord)
+    private Optional<EventHandler> suitableEventHandler(final Optional<EventRecord> eventRecord)
     {
-        return from(eventHandlers).firstMatch(new Predicate<EventHandler<Event>>()
+        return from(eventHandlers).firstMatch(new Predicate<EventHandler>()
                 {
                     @Override
-                    public boolean apply(final EventHandler<Event> eventEventHandler)
+                    public boolean apply(final EventHandler eventEventHandler)
                     {
-                        return eventEventHandler.interestedIn(eventRecord.get());
+                        return eventEventHandler.interestedIn(eventRecord.get().event);
                     }
                 });
     }
