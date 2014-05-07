@@ -1,4 +1,4 @@
-package org.huwtl.penfold.listener.app.metrics;
+package org.huwtl.penfold.listener.app.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import org.huwtl.penfold.listener.app.mysql.ConnectivityAware;
