@@ -1,9 +1,9 @@
 penfold-listener
 ================
 
-[![Build Status](https://travis-ci.org/huwtl/penfold-listener.png)](https://travis-ci.org/huwtl/penfold-listener)
+[![Build Status](https://travis-ci.org/qmetric/penfold-listener.png)](https://travis-ci.org/qmetric/penfold-listener)
 
-Event listener library for [penfold](https://github.com/huwtl/penfold)
+Event listener library for [penfold](https://github.com/qmetric/penfold)
 
 
 Usage
@@ -13,7 +13,7 @@ Add the following dependencies to your project:
 
 ```
 <dependency>
-    <groupId>org.huwtl</groupId>
+    <groupId>com.qmetric</groupId>
     <artifactId>penfold-listener</artifactId>
     <version>${VERSION}</version>
 </dependency>
