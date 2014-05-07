@@ -32,7 +32,7 @@ Create and start the event listener
       }
  };
 
- new EventListenerConfiguration(MI_EVENT_TRACKER_ID) //
+ new EventListenerConfiguration("unique tracker id") //
                 .readEventsFromMysqlEventStore(eventStoreDataSource) //
                 .pollForNewEventsEvery(1, MINUTES) //
                 .withMysqlEventTracker(eventTrackerDataSource) //
