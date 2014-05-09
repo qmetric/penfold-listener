@@ -39,7 +39,11 @@ class NewEventsIterator extends AbstractIterator<EventSequenceId>
         {
             return Optional.of(EventSequenceId.first());
         }
-        else if (lastTrackedEvent.get().isNotAlreadyStarted() && lastTrackedEvent.get().id.value < lastEventId.value)
+        else if (lastTrackedEvent.get().isUnstarted() && lastTrackedEvent.get().id.value <= lastEventId.value)
+        {
+            return Optional.of(lastTrackedEvent.get().id);
+        }
+        else if (lastTrackedEvent.get().isCompleted() && lastTrackedEvent.get().id.value < lastEventId.value)
         {
             return Optional.of(lastTrackedEvent.get().id.next());
         }

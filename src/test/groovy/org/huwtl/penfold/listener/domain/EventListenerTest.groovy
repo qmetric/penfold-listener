@@ -1,10 +1,15 @@
 package org.huwtl.penfold.listener.domain
+
 import com.google.common.base.Optional
 import org.huwtl.penfold.listener.domain.model.EventRecord
 import org.huwtl.penfold.listener.domain.model.EventSequenceId
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord
-import org.joda.time.DateTime
+import org.huwtl.penfold.listener.domain.model.TrackingStatus
 import spock.lang.Specification
+
+import static org.huwtl.penfold.listener.domain.model.TrackingStatus.COMPLETED
+import static org.huwtl.penfold.listener.domain.model.TrackingStatus.STARTED
+import static org.huwtl.penfold.listener.domain.model.TrackingStatus.UNSTARTED
 
 class EventListenerTest extends Specification {
     final event1 = Mock(EventRecord)
@@ -26,7 +31,7 @@ class EventListenerTest extends Specification {
     def "should process new events"()
     {
         given:
-        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0)), Optional.of(trackingRecord(1)), Optional.of(trackingRecord(2))]
+        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0, COMPLETED)), Optional.of(trackingRecord(1, COMPLETED)), Optional.of(trackingRecord(2, COMPLETED))]
         eventStoreReader.retrieveLastEventId() >> Optional.of(new EventSequenceId(2))
         eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.of(event2), Optional.of(event3), Optional.absent()]
 
@@ -63,18 +68,18 @@ class EventListenerTest extends Specification {
         0 * suitableEventHandler.handle(_)
 
         where:
-        lastTrackedRecords                                               | lastEventId
-        [Optional.absent()]                                              | Optional.absent()
-        [Optional.of(trackingRecord(2))]                                 | Optional.of(new EventSequenceId(2))
-        [Optional.of(trackingRecord(2)), Optional.of(trackingRecord(3))] | Optional.of(new EventSequenceId(3))
+        lastTrackedRecords                                                                     | lastEventId
+        [Optional.absent()]                                                                    | Optional.absent()
+        [Optional.of(trackingRecord(2, COMPLETED))]                                            | Optional.of(new EventSequenceId(2))
+        [Optional.of(trackingRecord(2, COMPLETED)), Optional.of(trackingRecord(3, COMPLETED))] | Optional.of(new EventSequenceId(3))
     }
 
     def "should not continue to poll further events when conflict exception thrown when attempting to start processing"()
     {
         given:
         final eventId = new EventSequenceId(0)
-        eventTracker.markAsStarted(eventId) >> {throw new ConflictException()}
-        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0))]
+        eventTracker.markAsStarted(eventId) >> { throw new ConflictException() }
+        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0, COMPLETED))]
         eventStoreReader.retrieveLastEventId() >> Optional.of(eventId)
         eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.absent()]
 
@@ -88,7 +93,7 @@ class EventListenerTest extends Specification {
     def "should not continue to poll further events when current event has already been started"()
     {
         given:
-        eventTracker.lastTracked() >>> [Optional.of(trackingRecord(0, true))]
+        eventTracker.lastTracked() >>> [Optional.of(trackingRecord(0, STARTED))]
         eventStoreReader.retrieveLastEventId() >> Optional.of(new EventSequenceId(10))
         eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.absent()]
 
@@ -102,8 +107,22 @@ class EventListenerTest extends Specification {
     def "should process events when last event was completed"()
     {
         given:
-        eventTracker.lastTracked() >>> [Optional.of(trackingRecord(0, true, true)), Optional.of(trackingRecord(1))]
+        eventTracker.lastTracked() >>> [Optional.of(trackingRecord(0, COMPLETED)), Optional.of(trackingRecord(1, COMPLETED))]
         eventStoreReader.retrieveLastEventId() >> Optional.of(new EventSequenceId(1))
+        eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.absent()]
+
+        when:
+        eventListener.poll()
+
+        then:
+        1 * suitableEventHandler.handle(event1)
+    }
+
+    def "should reprocess last event was unstarted"()
+    {
+        given:
+        eventTracker.lastTracked() >>> [Optional.of(trackingRecord(0, UNSTARTED)), Optional.of(trackingRecord(0, COMPLETED))]
+        eventStoreReader.retrieveLastEventId() >>> [Optional.of(new EventSequenceId(0))]
         eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.absent()]
 
         when:
@@ -116,8 +135,8 @@ class EventListenerTest extends Specification {
     def "should allow other consumers to process event on failure"()
     {
         given:
-        suitableEventHandler.handle(_ as EventRecord) >> {throw new RuntimeException()}
-        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0))]
+        suitableEventHandler.handle(_ as EventRecord) >> { throw new RuntimeException() }
+        eventTracker.lastTracked() >>> [Optional.absent(), Optional.of(trackingRecord(0, COMPLETED))]
         eventStoreReader.retrieveLastEventId() >> Optional.of(new EventSequenceId(0))
         eventStoreReader.retrieveBy(_ as EventSequenceId) >>> [Optional.of(event1), Optional.absent()]
 
@@ -138,8 +157,8 @@ class EventListenerTest extends Specification {
         eventHandler
     }
 
-    private static def EventTrackingRecord trackingRecord(final long eventId, final boolean started = false, final boolean completed = false)
+    private static def EventTrackingRecord trackingRecord(final long eventId, final TrackingStatus status)
     {
-        new EventTrackingRecord(new EventSequenceId(eventId), started ? Optional.of(DateTime.now()): Optional.<DateTime>absent(), completed ? Optional.of(DateTime.now()): Optional.<DateTime>absent())
+        new EventTrackingRecord(new EventSequenceId(eventId), status)
     }
 }

@@ -8,7 +8,7 @@ import org.huwtl.penfold.listener.domain.ConnectivityException;
 import org.huwtl.penfold.listener.domain.EventTracker;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord;
-import org.joda.time.DateTime;
+import org.huwtl.penfold.listener.domain.model.TrackingStatus;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.StatementContext;
@@ -16,6 +16,7 @@ import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import javax.sql.DataSource;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -23,15 +24,6 @@ import java.sql.Timestamp;
 public class MysqlEventTracker implements EventTracker
 {
     private static final Timestamp NULL_DATE = null;
-
-    private enum Status
-    {
-        UNSTARTED,
-
-        STARTED,
-
-        COMPLETED
-    }
 
     private final DBI dbi;
 
@@ -75,7 +67,7 @@ public class MysqlEventTracker implements EventTracker
         {
             public Optional<EventTrackingRecord> withHandle(final Handle handle) throws Exception
             {
-                return Optional.fromNullable(handle.createQuery("SELECT event_id, started, completed FROM event_trackers WHERE id = :trackerId") //
+                return Optional.fromNullable(handle.createQuery("SELECT event_id, status FROM event_trackers WHERE id = :trackerId") //
                         .bind("trackerId", trackerId)
                         .map(new EventTrackingRecordMapper()) //
                         .first() //
@@ -97,7 +89,7 @@ public class MysqlEventTracker implements EventTracker
                 {
                     return handle.createStatement("UPDATE event_trackers SET status = :status, event_id = :eventId, seen = :seen, started = :started, completed = :completed WHERE id = :id AND ((event_id = :eventId AND status = 'UNSTARTED') OR (event_id < :eventId AND status = 'COMPLETED'))") //
                             .bind("id", trackerId) //
-                            .bind("status", Status.STARTED.name()) //
+                            .bind("status", TrackingStatus.STARTED.name()) //
                             .bind("eventId", id.value) //
                             .bind("seen", now) //
                             .bind("started", now) //
@@ -119,7 +111,7 @@ public class MysqlEventTracker implements EventTracker
                 {
                     return handle.createStatement("INSERT INTO event_trackers (id, status, event_id, seen, started) VALUES (:id, :status, :eventId, :seen, :started)") //
                             .bind("id", trackerId) //
-                            .bind("status", Status.STARTED.name()) //
+                            .bind("status", TrackingStatus.STARTED.name()) //
                             .bind("eventId", id.value) //
                             .bind("seen", now) //
                             .bind("started", now) //
@@ -138,7 +130,7 @@ public class MysqlEventTracker implements EventTracker
             {
                 return handle.createStatement("UPDATE event_trackers SET status = :status, started = :started, completed = :completed WHERE id = :id AND event_id = :eventId") //
                         .bind("id", trackerId) //
-                        .bind("status", Status.UNSTARTED.name()) //
+                        .bind("status", TrackingStatus.UNSTARTED.name()) //
                         .bind("eventId", id.value) //
                         .bind("started", NULL_DATE) //
                         .bind("completed", NULL_DATE) //
@@ -157,7 +149,7 @@ public class MysqlEventTracker implements EventTracker
 
                 return handle.createStatement("UPDATE event_trackers SET status = :status, completed = :completed WHERE id = :id AND event_id = :eventId") //
                         .bind("id", trackerId) //
-                        .bind("status", Status.COMPLETED.name()) //
+                        .bind("status", TrackingStatus.COMPLETED.name()) //
                         .bind("eventId", id.value) //
                         .bind("completed", new Timestamp(dateTimeSource.now().getMillis())) //
                         .execute();
@@ -171,16 +163,9 @@ public class MysqlEventTracker implements EventTracker
         public EventTrackingRecord map(final int row, final ResultSet resultSet, final StatementContext statementContext) throws SQLException
         {
             final EventSequenceId id = new EventSequenceId(resultSet.getLong(1));
-            final Optional<DateTime> started = parseDateTime(resultSet, 2);
-            final Optional<DateTime> completed = parseDateTime(resultSet, 3);
+            final TrackingStatus status = TrackingStatus.valueOf(resultSet.getString(2));
 
-            return new EventTrackingRecord(id, started, completed);
+            return new EventTrackingRecord(id, status);
         }
-    }
-
-    private static Optional<DateTime> parseDateTime(final ResultSet resultSet, final int columnIndex) throws SQLException
-    {
-        final Timestamp timestamp = resultSet.getTimestamp(columnIndex);
-        return timestamp != null ? Optional.of(new DateTime(timestamp)) : Optional.<DateTime>absent();
     }
 }

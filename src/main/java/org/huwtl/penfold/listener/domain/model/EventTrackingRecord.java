@@ -1,34 +1,34 @@
 package org.huwtl.penfold.listener.domain.model;
 
-import com.google.common.base.Optional;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.joda.time.DateTime;
 
 public class EventTrackingRecord
 {
     public final EventSequenceId id;
 
-    public final Optional<DateTime> startedDate;
+    public final TrackingStatus status;
 
-    public final Optional<DateTime> completedDate;
-
-    public EventTrackingRecord(final EventSequenceId id, final Optional<DateTime> startedDate, final Optional<DateTime> completedDate)
+    public EventTrackingRecord(final EventSequenceId id, final TrackingStatus status)
     {
         this.id = id;
-        this.startedDate = startedDate;
-        this.completedDate = completedDate;
+        this.status = status;
     }
 
-    public boolean isNotAlreadyStarted()
+    public boolean isUnstarted()
     {
-        return !isAlreadyStarted();
+        return status == TrackingStatus.UNSTARTED;
+    }
+
+    public boolean isCompleted()
+    {
+        return status == TrackingStatus.COMPLETED;
     }
 
     public boolean isAlreadyStarted()
     {
-        return startedDate.isPresent() && !completedDate.isPresent();
+        return status == TrackingStatus.STARTED;
     }
 
     @Override public int hashCode()

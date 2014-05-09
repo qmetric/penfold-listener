@@ -7,6 +7,7 @@ import org.huwtl.penfold.listener.app.DateTimeSource
 import org.huwtl.penfold.listener.domain.ConflictException
 import org.huwtl.penfold.listener.domain.model.EventSequenceId
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord
+import org.huwtl.penfold.listener.domain.model.TrackingStatus
 import org.joda.time.DateTime
 import spock.lang.Shared
 import spock.lang.Specification
@@ -57,7 +58,7 @@ class MysqlEventTrackerTest extends Specification {
         eventTracker.markAsStarted(EventSequenceId.first())
 
         expect:
-        eventTracker.lastTracked() == Optional.of(new EventTrackingRecord(EventSequenceId.first(), Optional.of(currentDate), Optional.absent()))
+        eventTracker.lastTracked() == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
     }
 
     def "should prevent concurrent handling of the same event"()
@@ -82,7 +83,7 @@ class MysqlEventTrackerTest extends Specification {
         thrown(ConflictException)
     }
 
-    def "should track event first event as being started by handler"()
+    def "should first event as being started by handler"()
     {
         when:
         eventTracker.markAsStarted(EventSequenceId.first())
@@ -90,7 +91,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), Optional.of(currentDate), Optional.absent()))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
     }
 
     def "should track next event as being started following a previous completed event"()
@@ -105,7 +106,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first().next(), Optional.of(currentDate), Optional.absent()))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first().next(), TrackingStatus.STARTED))
     }
 
     def "should track next event again after being unstarted"()
@@ -120,7 +121,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), Optional.of(currentDate), Optional.absent()))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
     }
 
     def "should track event as being completed by handler"()
@@ -133,8 +134,8 @@ class MysqlEventTrackerTest extends Specification {
 
         then:
         final lastTracked = eventTracker.lastTracked()
-        lastTracked.get().isNotAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), Optional.of(currentDate), Optional.of(currentDate)))
+        !lastTracked.get().isAlreadyStarted()
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.COMPLETED))
     }
 
     private static DataSource initDataSource()
