@@ -14,6 +14,7 @@ import org.huwtl.penfold.listener.domain.model.TaskCancelled
 import org.huwtl.penfold.listener.domain.model.TaskCompleted
 import org.huwtl.penfold.listener.domain.model.TaskCreated
 import org.huwtl.penfold.listener.domain.model.TaskPayloadUpdated
+import org.huwtl.penfold.listener.domain.model.TaskRequeued
 import org.huwtl.penfold.listener.domain.model.TaskStarted
 import org.huwtl.penfold.listener.domain.model.TaskTriggered
 import org.joda.time.DateTime
@@ -43,6 +44,7 @@ class EventDeserializerTest extends Specification {
         "task_cancelled.json"       | new TaskCancelled("TaskCancelled", "a1", 1L, created)
         "task_completed.json"       | new TaskCompleted("TaskCompleted", "a1", 1L, created)
         "task_started.json"         | new TaskStarted("TaskStarted", "a1", 1L, created)
+        "task_requeued.json"        | new TaskRequeued("TaskRequeued", "a1", 1L, created)
         "task_triggered.json"       | new TaskTriggered("TaskTriggered", "a1", 1L, created)
         "task_payload_updated.json" | new TaskPayloadUpdated("TaskPayloadUpdated", "a1", 1L, created, new Patch([new Add("Add", "/a/b", value("{\"a\":1}"))]), Optional.of("update_type_1"), Optional.of(100L))
     }

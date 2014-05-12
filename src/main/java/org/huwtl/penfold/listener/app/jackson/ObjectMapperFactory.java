@@ -35,6 +35,7 @@ public class ObjectMapperFactory
             .put("TaskCancelled", TaskCancelled.class) //
             .put("TaskTriggered", TaskTriggered.class) //
             .put("TaskStarted", TaskStarted.class) //
+            .put("TaskRequeued", TaskRequeued.class) //
             .put("TaskCompleted", TaskCompleted.class) //
             .build();
 
