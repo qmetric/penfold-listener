@@ -98,7 +98,9 @@ public class EventListener
                     @Override
                     public boolean apply(final EventHandler eventEventHandler)
                     {
-                        return eventEventHandler.interestedIn(eventRecord.get().event);
+                        final EventRecord record = eventRecord.get();
+
+                        return record.event != null && eventEventHandler.interestedIn(record.event);
                     }
                 });
     }

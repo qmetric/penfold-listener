@@ -37,6 +37,7 @@ public class ObjectMapperFactory
             .put("TaskStarted", TaskStarted.class) //
             .put("TaskRequeued", TaskRequeued.class) //
             .put("TaskCompleted", TaskCompleted.class) //
+            .put("TaskArchived", TaskArchived.class) //
             .build();
 
     private final Map<String, Class<? extends PatchOperation>> supportedPatchOperations = new ImmutableMap.Builder<String, Class<? extends PatchOperation>>() //

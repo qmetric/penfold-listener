@@ -1,10 +1,7 @@
 package org.huwtl.penfold.listener.domain
 
 import com.google.common.base.Optional
-import org.huwtl.penfold.listener.domain.model.EventRecord
-import org.huwtl.penfold.listener.domain.model.EventSequenceId
-import org.huwtl.penfold.listener.domain.model.EventTrackingRecord
-import org.huwtl.penfold.listener.domain.model.TrackingStatus
+import org.huwtl.penfold.listener.domain.model.*
 import spock.lang.Specification
 
 import static org.huwtl.penfold.listener.domain.model.TrackingStatus.COMPLETED
@@ -12,11 +9,11 @@ import static org.huwtl.penfold.listener.domain.model.TrackingStatus.STARTED
 import static org.huwtl.penfold.listener.domain.model.TrackingStatus.UNSTARTED
 
 class EventListenerTest extends Specification {
-    final event1 = Mock(EventRecord)
+    final event1 = eventRecord()
 
-    final event2 = Mock(EventRecord)
+    final event2 = eventRecord()
 
-    final event3 = Mock(EventRecord)
+    final event3 = eventRecord()
 
     final eventStoreReader = Mock(EventStore)
 
@@ -160,5 +157,12 @@ class EventListenerTest extends Specification {
     private static def EventTrackingRecord trackingRecord(final long eventId, final TrackingStatus status)
     {
         new EventTrackingRecord(new EventSequenceId(eventId), status)
+    }
+
+    private def EventRecord eventRecord()
+    {
+        final event = Mock(Event)
+        final eventRecord = new EventRecord(new EventSequenceId(1), event)
+        eventRecord
     }
 }
