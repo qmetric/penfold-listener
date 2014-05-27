@@ -14,8 +14,8 @@ public class TaskPayloadUpdated extends Event
     private TaskPayloadUpdated()
     {
         payloadUpdate = null;
-        updateType = null;
-        score = null;
+        updateType = Optional.absent();
+        score = Optional.absent();
     }
 
     public TaskPayloadUpdated(final String eventType, final String aggregateId, final Long aggregateVersion, final DateTime created, final Patch payloadUpdate, final Optional<String> updateType, final Optional<Long> score)
