@@ -32,11 +32,10 @@ public class ObjectMapperFactory
             .put("TaskPayloadUpdated", TaskPayloadUpdated.class) //
             .put("FutureTaskCreated", FutureTaskCreated.class) //
             .put("TaskCreated", TaskCreated.class) //
-            .put("TaskCancelled", TaskCancelled.class) //
             .put("TaskTriggered", TaskTriggered.class) //
             .put("TaskStarted", TaskStarted.class) //
             .put("TaskRequeued", TaskRequeued.class) //
-            .put("TaskCompleted", TaskCompleted.class) //
+            .put("TaskClosed", TaskClosed.class) //
             .put("TaskArchived", TaskArchived.class) //
             .build();
 
