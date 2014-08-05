@@ -1,0 +1,8 @@
+{
+  "type": "TaskRescheduled",
+  "aggregateId": "a1",
+  "aggregateVersion": 1,
+  "created": "2014-02-03 12:47:54",
+  "aggregateType": "Task",
+  "triggerDate": "2014-02-03 14:30:01"
+}

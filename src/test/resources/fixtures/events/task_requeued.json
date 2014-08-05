@@ -1,7 +1,21 @@
 {
-    "type" : "TaskRequeued",
-    "aggregateId" : "a1",
-    "aggregateVersion" : 1,
-    "created" : "2014-02-03 12:47:54",
-    "aggregateType" : "Task"
+  "type": "TaskRequeued",
+  "aggregateId": "a1",
+  "aggregateVersion": 1,
+  "created": "2014-02-03 12:47:54",
+  "aggregateType": "Task",
+  "requeueType": "reason1",
+  "assignee": "user1",
+  "payloadUpdate": {
+    "operations": [
+      {
+        "op": "Add",
+        "path": "/a/b",
+        "value": {
+          "a": 1
+        }
+      }
+    ]
+  },
+  "score": 100
 }

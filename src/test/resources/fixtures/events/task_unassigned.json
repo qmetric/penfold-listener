@@ -1,8 +1,10 @@
 {
-  "type": "TaskPayloadUpdated",
+  "type": "TaskUnassigned",
   "aggregateId": "a1",
   "aggregateVersion": 1,
   "created": "2014-02-03 12:47:54",
+  "aggregateType": "Task",
+  "unassignType": "reason1",
   "payloadUpdate": {
     "operations": [
       {
@@ -13,8 +15,5 @@
         }
       }
     ]
-  },
-  "updateType": "reason1",
-  "score": 100,
-  "aggregateType": "Task"
+  }
 }
