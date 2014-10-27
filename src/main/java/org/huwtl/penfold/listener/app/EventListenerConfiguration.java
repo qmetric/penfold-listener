@@ -12,6 +12,7 @@ import org.huwtl.penfold.listener.domain.EventHandler;
 import org.huwtl.penfold.listener.domain.EventListener;
 import org.huwtl.penfold.listener.domain.EventStore;
 import org.huwtl.penfold.listener.domain.EventTracker;
+import org.joda.time.DateTime;
 
 import javax.sql.DataSource;
 
@@ -34,6 +35,8 @@ public class EventListenerConfiguration
     private DataSource eventStoreDataSource;
 
     private DataSource eventTrackerDataSource;
+
+    private Optional<DateTime> cutOffDate = Optional.absent();
 
     private Optional<CustomDefinedValueMapper> customDefinedValueMapper = Optional.absent();
 
@@ -68,6 +71,12 @@ public class EventListenerConfiguration
         return this;
     }
 
+    public EventListenerConfiguration ignoreEventsEarlierThan(final DateTime cutOffDate)
+    {
+        this.cutOffDate = Optional.of(cutOffDate);
+        return this;
+    }
+
     public EventListenerConfiguration parseCustomJsonWith(final CustomDefinedValueMapper customDefinedValueMapper)
     {
         this.customDefinedValueMapper = Optional.of(customDefinedValueMapper);
@@ -94,7 +103,7 @@ public class EventListenerConfiguration
 
         final EventTracker eventTracker = new MysqlEventTracker(eventTrackerDataSource, trackerId);
 
-        final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers);
+        final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers, cutOffDate);
 
         registerHealthChecks(eventStore, eventTracker);
 

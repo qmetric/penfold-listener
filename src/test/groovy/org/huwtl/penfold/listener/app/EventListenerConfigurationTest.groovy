@@ -1,8 +1,10 @@
 package org.huwtl.penfold.listener.app
+
 import com.codahale.metrics.health.HealthCheckRegistry
 import com.google.common.base.Optional
 import org.huwtl.penfold.listener.domain.CustomDefinedValueMapper
 import org.huwtl.penfold.listener.domain.EventHandler
+import org.joda.time.DateTime
 import spock.lang.Specification
 
 import javax.sql.DataSource
@@ -66,6 +68,17 @@ class EventListenerConfigurationTest extends Specification {
 
         then:
         config.customDefinedValueMapper == Optional.of(customParser)
+    }
+
+    def "should accept cut off date"() {
+        given:
+        final cutOffDate = DateTime.now()
+
+        when:
+        config.ignoreEventsEarlierThan(cutOffDate)
+
+        then:
+        config.cutOffDate == Optional.of(cutOffDate)
     }
 
     def "should accept health check registry"() {

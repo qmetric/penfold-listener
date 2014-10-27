@@ -3,8 +3,10 @@ package org.huwtl.penfold.listener.domain;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
+import org.huwtl.penfold.listener.domain.model.Event;
 import org.huwtl.penfold.listener.domain.model.EventRecord;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +25,14 @@ public class EventListener
 
     private final List<EventHandler> eventHandlers;
 
-    public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler> eventHandlers)
+    private final Optional<DateTime> cutOffDate;
+
+    public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler> eventHandlers, final Optional<DateTime> cutOffDate)
     {
         this.eventStore = eventStore;
         this.eventTracker = eventTracker;
         this.eventHandlers = eventHandlers;
+        this.cutOffDate = cutOffDate;
     }
 
     public void poll()
@@ -68,12 +73,17 @@ public class EventListener
 
         final Optional<EventRecord> eventRecord = eventStore.retrieveBy(eventId);
 
-        if (eventRecord.isPresent())
+        if (eventRecord.isPresent() && eventAfterCutOffDate(eventRecord.get().event))
         {
             handleEvent(eventRecord);
         }
 
         eventTracker.markAsCompleted(eventId);
+    }
+
+    private boolean eventAfterCutOffDate(final Event event)
+    {
+        return !cutOffDate.isPresent() || event.created.isAfter(cutOffDate.get());
     }
 
     private void handleEvent(final Optional<EventRecord> eventRecord)
