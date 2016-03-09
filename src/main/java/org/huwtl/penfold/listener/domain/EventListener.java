@@ -35,18 +35,18 @@ public class EventListener
 
     private final Optional<DateTime> cutOffDate;
 
-    private final StartedEventTimeoutHandler startedEventTimeoutHandler;
+    private final StartedEventTimeoutHandler2 startedEventTimeoutHandler;
 
     private final RetryerBuilder<Optional<EventRecord>> eventExistenceRetryBuilder;
 
     public EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler> eventHandlers, final Optional<DateTime> cutOffDate,
-                         final StartedEventTimeoutHandler startedEventTimeoutHandler)
+                         final StartedEventTimeoutHandler2 startedEventTimeoutHandler)
     {
         this(eventStore, eventTracker, eventHandlers, cutOffDate, startedEventTimeoutHandler, DEFAULT_EVENT_EXISTENCE_MAX_ATTEMPTS);
     }
 
     EventListener(final EventStore eventStore, final EventTracker eventTracker, final List<EventHandler> eventHandlers, final Optional<DateTime> cutOffDate,
-                  final StartedEventTimeoutHandler startedEventTimeoutHandler, final int eventExistenceRetrievalAttempts)
+                  final StartedEventTimeoutHandler2 startedEventTimeoutHandler, final int eventExistenceRetrievalAttempts)
     {
 
         this.eventStore = eventStore;

@@ -12,7 +12,7 @@ import org.huwtl.penfold.listener.domain.EventHandler;
 import org.huwtl.penfold.listener.domain.EventListener;
 import org.huwtl.penfold.listener.domain.EventStore;
 import org.huwtl.penfold.listener.domain.EventTracker;
-import org.huwtl.penfold.listener.domain.StartedEventTimeoutHandler;
+import org.huwtl.penfold.listener.domain.StartedEventTimeoutHandler2;
 import org.joda.time.DateTime;
 
 import javax.sql.DataSource;
@@ -104,7 +104,7 @@ public class EventListenerConfiguration
 
         final EventTracker eventTracker = new MysqlEventTracker(eventTrackerDataSource, trackerId);
 
-        final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers, cutOffDate, new StartedEventTimeoutHandler(eventTracker));
+        final EventListener eventListener = new EventListener(eventStore, eventTracker, eventHandlers, cutOffDate, new StartedEventTimeoutHandler2(eventTracker));
 
         registerHealthChecks(eventStore, eventTracker);
 

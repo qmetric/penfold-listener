@@ -59,7 +59,7 @@ class EventListenerIntegrationTest extends Specification {
 
     final unsuitableEventHandler = eventHandler(false)
 
-    final startedEventTimeoutHandler = new StartedEventTimeoutHandler(eventTracker, dateTimeSource, startedTaskTimeoutInMinutes)
+    final startedEventTimeoutHandler = new StartedEventTimeoutHandler2(eventTracker, dateTimeSource, startedTaskTimeoutInMinutes)
 
     final eventListener = new EventListener(eventStoreReader, eventTracker, [suitableEventHandler, unsuitableEventHandler], absent(), startedEventTimeoutHandler, 2)
 
