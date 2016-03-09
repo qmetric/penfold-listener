@@ -9,6 +9,7 @@ import org.huwtl.penfold.listener.domain.EventTracker;
 import org.huwtl.penfold.listener.domain.model.EventSequenceId;
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord;
 import org.huwtl.penfold.listener.domain.model.TrackingStatus;
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.StatementContext;
@@ -67,7 +68,7 @@ public class MysqlEventTracker implements EventTracker
         {
             public Optional<EventTrackingRecord> withHandle(final Handle handle) throws Exception
             {
-                return Optional.fromNullable(handle.createQuery("SELECT event_id, status FROM event_trackers WHERE id = :trackerId") //
+                return Optional.fromNullable(handle.createQuery("SELECT event_id, status, seen FROM event_trackers WHERE id = :trackerId") //
                         .bind("trackerId", trackerId)
                         .map(new EventTrackingRecordMapper()) //
                         .first() //
@@ -124,14 +125,17 @@ public class MysqlEventTracker implements EventTracker
     @Override
     public void markAsUnstarted(final EventSequenceId id)
     {
+        final Timestamp now = new Timestamp(dateTimeSource.now().getMillis());
+
         dbi.withHandle(new HandleCallback<Integer>()
         {
             public Integer withHandle(final Handle handle) throws Exception
             {
-                return handle.createStatement("UPDATE event_trackers SET status = :status, started = :started, completed = :completed WHERE id = :id AND event_id = :eventId") //
+                return handle.createStatement("UPDATE event_trackers SET status = :status, seen = :seen, started = :started, completed = :completed WHERE id = :id AND event_id = :eventId") //
                         .bind("id", trackerId) //
                         .bind("status", TrackingStatus.UNSTARTED.name()) //
                         .bind("eventId", id.value) //
+                        .bind("seen", now) //
                         .bind("started", NULL_DATE) //
                         .bind("completed", NULL_DATE) //
                         .execute();
@@ -142,15 +146,18 @@ public class MysqlEventTracker implements EventTracker
     @Override
     public void markAsCompleted(final EventSequenceId id)
     {
+        final Timestamp now = new Timestamp(dateTimeSource.now().getMillis());
+
         dbi.withHandle(new HandleCallback<Integer>()
         {
             public Integer withHandle(final Handle handle) throws Exception
             {
 
-                return handle.createStatement("UPDATE event_trackers SET status = :status, completed = :completed WHERE id = :id AND event_id = :eventId") //
+                return handle.createStatement("UPDATE event_trackers SET status = :status, seen = :seen, completed = :completed WHERE id = :id AND event_id = :eventId") //
                         .bind("id", trackerId) //
                         .bind("status", TrackingStatus.COMPLETED.name()) //
                         .bind("eventId", id.value) //
+                        .bind("seen", now) //
                         .bind("completed", new Timestamp(dateTimeSource.now().getMillis())) //
                         .execute();
             }
@@ -164,8 +171,9 @@ public class MysqlEventTracker implements EventTracker
         {
             final EventSequenceId id = new EventSequenceId(resultSet.getLong(1));
             final TrackingStatus status = TrackingStatus.valueOf(resultSet.getString(2));
+            final DateTime lastModified = new DateTime(resultSet.getTimestamp(3).getTime());
 
-            return new EventTrackingRecord(id, status);
+            return new EventTrackingRecord(id, status, lastModified);
         }
     }
 }

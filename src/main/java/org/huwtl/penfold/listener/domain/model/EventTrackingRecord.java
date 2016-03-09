@@ -3,6 +3,7 @@ package org.huwtl.penfold.listener.domain.model;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.joda.time.DateTime;
 
 public class EventTrackingRecord
 {
@@ -10,10 +11,13 @@ public class EventTrackingRecord
 
     public final TrackingStatus status;
 
-    public EventTrackingRecord(final EventSequenceId id, final TrackingStatus status)
+    public final DateTime lastModified;
+
+    public EventTrackingRecord(final EventSequenceId id, final TrackingStatus status, final DateTime lastModified)
     {
         this.id = id;
         this.status = status;
+        this.lastModified = lastModified;
     }
 
     public boolean isUnstarted()
@@ -29,6 +33,11 @@ public class EventTrackingRecord
     public boolean isAlreadyStarted()
     {
         return status == TrackingStatus.STARTED;
+    }
+
+    public boolean isAlreadyStartedAndTimedOut(final DateTime now, final int timeoutInMinutes)
+    {
+        return isAlreadyStarted() && lastModified.plusMinutes(timeoutInMinutes).isBefore(now);
     }
 
     @Override public int hashCode()

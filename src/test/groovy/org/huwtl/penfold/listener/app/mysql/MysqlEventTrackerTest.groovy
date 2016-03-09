@@ -58,7 +58,7 @@ class MysqlEventTrackerTest extends Specification {
         eventTracker.markAsStarted(EventSequenceId.first())
 
         expect:
-        eventTracker.lastTracked() == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
+        eventTracker.lastTracked() == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED, currentDate))
     }
 
     def "should prevent concurrent handling of the same event"()
@@ -91,7 +91,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED, currentDate))
     }
 
     def "should track next event as being started following a previous completed event"()
@@ -106,7 +106,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first().next(), TrackingStatus.STARTED))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first().next(), TrackingStatus.STARTED, currentDate))
     }
 
     def "should track next event again after being unstarted"()
@@ -121,7 +121,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.STARTED, currentDate))
     }
 
     def "should track event as being completed by handler"()
@@ -135,7 +135,7 @@ class MysqlEventTrackerTest extends Specification {
         then:
         final lastTracked = eventTracker.lastTracked()
         !lastTracked.get().isAlreadyStarted()
-        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.COMPLETED))
+        lastTracked == Optional.of(new EventTrackingRecord(EventSequenceId.first(), TrackingStatus.COMPLETED, currentDate))
     }
 
     private static DataSource initDataSource()
