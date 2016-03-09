@@ -4,7 +4,7 @@ import com.google.common.base.Optional;
 import org.huwtl.penfold.listener.app.DateTimeSource;
 import org.huwtl.penfold.listener.domain.model.EventTrackingRecord;
 
-public class StartedEventTimeoutHandler2
+public class StartedEventTimeoutHandler
 {
     private static final int DEFAULT_TIMEOUT_IN_MINUTES = 10;
 
@@ -14,12 +14,12 @@ public class StartedEventTimeoutHandler2
 
     private final int timeoutInMinutes;
 
-    public StartedEventTimeoutHandler2(final EventTracker eventTracker)
+    public StartedEventTimeoutHandler(final EventTracker eventTracker)
     {
         this(eventTracker, new DateTimeSource(), DEFAULT_TIMEOUT_IN_MINUTES);
     }
 
-    public StartedEventTimeoutHandler2(final EventTracker eventTracker, final DateTimeSource dateTimeSource, final int timeoutInMinutes)
+    public StartedEventTimeoutHandler(final EventTracker eventTracker, final DateTimeSource dateTimeSource, final int timeoutInMinutes)
     {
         this.eventTracker = eventTracker;
         this.dateTimeSource = dateTimeSource;
